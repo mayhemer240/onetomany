@@ -93,7 +93,7 @@ elif introspection_type == INTROSPECT_TABLES:
             self.startTime = startTime
             self.instructor = instructor
 
-        def __str__(self):
-            return f"Section: {self.departmentAbbreviation} {self.courseNumber}-{self.sectionNumber}, " \
+def __str__(self):
+    return f"Section: {self.departmentAbbreviation} {self.courseNumber}-{self.sectionNumber}, " \
                    f"Semester: {self.semester} {self.sectionYear}, Location: {self.building} {self.room}, " \
                    f"Schedule: {self.schedule}, Start Time: {self.startTime}, Instructor: {self.instructor}"
