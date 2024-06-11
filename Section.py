@@ -92,16 +92,17 @@ elif introspection_type == INTROSPECT_TABLES:
             self.schedule = schedule
             self.startTime = startTime
             self.instructor = instructor
-def set_section(session: Session, departmentAbbreviation: str, courseNumber: int, sectionNumber: int,
-                   semester: str, sectionYear: int, building: str, room: int,
-                   schedule: str, startTime: Time, instructor: str):
+
+def set_department(self, section: Section):
     """
-    Create a new section in the database without enforcing uniqueness constraints.
+    Accept a new department withoug checking for any uniqueness.
+    I'm going to assume that either a) the caller checked that first
+    and/or b) the database will raise its own exception.
+    :param department:  The new department for the course.
+    :return:            None
     """
-    section = Section(departmentAbbreviation=departmentAbbreviation, courseNumber=courseNumber,
-                      sectionNumber=sectionNumber, semester=semester, sectionYear=sectionYear,
-                      building=building, room=room, schedule=schedule, startTime=startTime,
-                      instructor=instructor)
+    self.section = section
+    self.departmentAbbreviation = department.abbreviation
 def __str__(self):
     return f"Section: {self.departmentAbbreviation} {self.courseNumber}-{self.sectionNumber}, " \
                    f"Semester: {self.semester} {self.sectionYear}, Location: {self.building} {self.room}, " \
