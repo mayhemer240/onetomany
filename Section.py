@@ -92,7 +92,7 @@ elif introspection_type == INTROSPECT_TABLES:
             self.schedule = schedule
             self.startTime = startTime
             self.instructor = instructor
-def create_section(session: Session, departmentAbbreviation: str, courseNumber: int, sectionNumber: int,
+def set_section(session: Session, departmentAbbreviation: str, courseNumber: int, sectionNumber: int,
                    semester: str, sectionYear: int, building: str, room: int,
                    schedule: str, startTime: Time, instructor: str):
     """
@@ -108,6 +108,6 @@ def __str__(self):
                    f"Schedule: {self.schedule}, Start Time: {self.startTime}, Instructor: {self.instructor}"
 
 """Add the two instance methods to the class, regardless of whether we introspect or not."""
-setattr(Section, 'create_section', create_section)
+setattr(Section, 'set_section', set_section)
 setattr(Course, '__str__', __str__) with section: from orm_base 
 
