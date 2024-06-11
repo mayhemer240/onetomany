@@ -109,5 +109,5 @@ def __str__(self):
 
 """Add the two instance methods to the class, regardless of whether we introspect or not."""
 setattr(Section, 'set_section', set_section)
-setattr(Course, '__str__', __str__) with section: from orm_base 
+setattr(Course, '__str__', __str__) 
 
