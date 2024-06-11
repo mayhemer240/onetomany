@@ -14,15 +14,12 @@ table_name: str = "sections"                 # The physical name of this table
 introspection_type = IntrospectionFactory().introspection_type
 
 if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECTION:
-
+    
     class Section(Base):
-
         """
-
         A section represents a specific instance of a course offered during a semester.
-
         """
-
+        
         __tablename__ = table_name
 
         departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation', String(10), primary_key=True)
