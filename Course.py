@@ -2,101 +2,90 @@ from orm_base import Base
 from db_connection import engine
 from IntrospectionFactory import IntrospectionFactory
 from sqlalchemy import UniqueConstraint, ForeignKeyConstraint
-from sqlalchemy import String, Integer, Time
+from sqlalchemy import String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 from sqlalchemy import Table
 from Department import Department
 from constants import START_OVER, REUSE_NO_INTROSPECTION, INTROSPECT_TABLES
-"""For consistency, the code below is implmented the same as Course"""
+"""In this Entity, I decided to do everything in this file, even though it got a little
+busy.  So there is no CourseClass.py to go with the DepartmentClass.py file."""
 
-table_name: str = "sections"                 # The physical name of this table
+table_name: str = "courses"                 # The physical name of this table
 # Find out whether the user is introspecting or starting over
 introspection_type = IntrospectionFactory().introspection_type
-
 if introspection_type == START_OVER or introspection_type == REUSE_NO_INTROSPECTION:
-
-    class Section(Base):
-
+    class Course(Base):
+        """A catalog entry.  Each course proposes to offer students who enroll in
+        a section of the course an organized sequence of lessons and assignments
+        aimed at teaching them specified skills."""
+        __tablename__ = table_name  # Give SQLAlchemy the name of the table.
         """
-
-        A section represents a specific instance of a course offered during a semester.
-
+        The ForeignKey argument to the mapped_column method is not needed because I am 
+        specifying this foreign key constraint in the __table_args__ call farther down
+        in the code.  I can do this either "in-line" using ForeignKey in the mapped_column
+        call, OR (exclusive OR here) do it in __table_args__.
+        
+        If we have more than one column in the primary key of the parent, then we 
+        MUST use __table_args__, we canNOT express the foreign key constraint using
+        ForeignKey.  I show you how to do it in __table_args__ because you'll need
+        that for the relationship from courses into sections.
         """
+        departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation',
+    #                                                       ForeignKey("departments.abbreviation"),
+                                                            primary_key=True)
+        department: Mapped["Department"] = relationship(back_populates="courses")
+        courseNumber: Mapped[int] = mapped_column('course_number', Integer,
+                                                  nullable=False, primary_key=True)
+        name: Mapped[str] = mapped_column('name', String(50), nullable=False)
+        description: Mapped[str] = mapped_column('description', String(500), nullable=False)
+        units: Mapped[int] = mapped_column('units', Integer, nullable=False)
+        # __table_args__ can best be viewed as directives that we ask SQLAlchemy to
+        # send to the database.  In this case, that we want two separate uniqueness
+        # constraints (candidate keys).
+        __table_args__ = (UniqueConstraint("department_abbreviation", "name", name="courses_uk_01"),
+                          ForeignKeyConstraint([departmentAbbreviation],
+                                               [Department.abbreviation]))
 
-        __tablename__ = table_name
-
-        departmentAbbreviation: Mapped[str] = mapped_column('department_abbreviation', String(10), primary_key=True)
-        courseNumber: Mapped[int] = mapped_column('course_number', Integer, primary_key=True)
-        sectionNumber: Mapped[int] = mapped_column('section_number', Integer, primary_key=True)
-        semester: Mapped[str] = mapped_column('semester', String(10), nullable=False, primary_key=True)
-        sectionYear: Mapped[int] = mapped_column('section_year', Integer, nullable=False, primary_key=True)
-        building: Mapped[str] = mapped_column('building', String(6), nullable=False)
-        room: Mapped[int] = mapped_column('room', Integer, nullable=False)
-        schedule: Mapped[str] = mapped_column('schedule', String(6), nullable=False)
-        startTime: Mapped[Time] = mapped_column('start_time', Time, nullable=False)
-
-        instructor: Mapped[str] = mapped_column('instructor', String(80), nullable=False)
-
-        __table_args__ = (
-            UniqueConstraint("sectionYear", "semester", "schedule", "startTime", "building", "room",
-                             name="sections_uk_01"),
-            UniqueConstraint("sectionYear", "semester", "schedule", "startTime", "instructor",
-                             name="sections_uk_02"),
-            ForeignKeyConstraint(["departmentAbbreviation", "courseNumber"],
-                                 ["courses.department_abbreviation", "courses.course_number"])
-        )
-
-        def __init__(self, departmentAbbreviation: str, courseNumber: int, sectionNumber: int,
-
-                     semester: str, sectionYear: int, building: str, room: int,
-
-                     schedule: str, startTime: Time, instructor: str):
-            self.departmentAbbreviation = departmentAbbreviation
+        def __init__(self, department: Department, courseNumber: int, name: str, description: str, units: int):
+            self.set_department(department)
             self.courseNumber = courseNumber
-            self.sectionNumber = sectionNumber
-            self.semester = semester
-            self.sectionYear = sectionYear
-            self.building = building
-            self.room = room
-            self.schedule = schedule
-            self.startTime = startTime
-            self.instructor = instructor
-
-        def __str__(self):
-            return f"Section: {self.departmentAbbreviation} {self.courseNumber}-{self.sectionNumber}, " \
-                   f"Semester: {self.semester} {self.sectionYear}, Location: {self.building} {self.room}, " \
-                   f"Schedule: {self.schedule}, Start Time: {self.startTime}, Instructor: {self.instructor}"
-
+            self.name = name
+            self.description = description
+            self.units = units
 elif introspection_type == INTROSPECT_TABLES:
-
-    class Section(Base):
+    class Course(Base):
         __table__ = Table(table_name, Base.metadata, autoload_with=engine)
+        # Otherwise, this property will be named department_abbreviation
         departmentAbbreviation: Mapped[str] = column_property(__table__.c.department_abbreviation)
+        # This back_populates will not be created by the introspection.
+        department: Mapped["Department"] = relationship(back_populates="courses")
+        # Otherwise, this property will be named course_number
         courseNumber: Mapped[int] = column_property(__table__.c.course_number)
-        sectionNumber: Mapped[int] = column_property(__table__.c.section_number)
-        semester: Mapped[str] = column_property(__table__.c.semester)
-        sectionYear: Mapped[int] = column_property(__table__.c.section_year)
-        building: Mapped[str] = column_property(__table__.c.building)
-        room: Mapped[int] = column_property(__table__.c.room)
-        schedule: Mapped[str] = column_property(__table__.c.schedule)
-        startTime: Mapped[Time] = column_property(__table__.c.start_time)
-        instructor: Mapped[str] = column_property(__table__.c.instructor)
 
-        def __init__(self, departmentAbbreviation: str, courseNumber: int, sectionNumber: int,
-                 semester: str, sectionYear: int, building: str, room: int,
-                 schedule: str, startTime: Time, instructor: str):
-            self.departmentAbbreviation = departmentAbbreviation
+        def __init__(self, department: Department, courseNumber: int, name: str, description: str, units: int):
+            self.set_department(department)
             self.courseNumber = courseNumber
-            self.sectionNumber = sectionNumber
-            self.semester = semester
-            self.sectionYear = sectionYear
-            self.building = building
-            self.room = room
-            self.schedule = schedule
-            self.startTime = startTime
-            self.instructor = instructor
+            self.name = name
+            self.description = description
+            self.units = units
 
-        def __str__(self):
-            return f"Section: {self.departmentAbbreviation} {self.courseNumber}-{self.sectionNumber}, " \
-                   f"Semester: {self.semester} {self.sectionYear}, Location: {self.building} {self.room}, " \
-                   f"Schedule: {self.schedule}, Start Time: {self.startTime}, Instructor: {self.instructor}"
+
+def set_department(self, department: Department):
+    """
+    Accept a new department withoug checking for any uniqueness.
+    I'm going to assume that either a) the caller checked that first
+    and/or b) the database will raise its own exception.
+    :param department:  The new department for the course.
+    :return:            None
+    """
+    self.department = department
+    self.departmentAbbreviation = department.abbreviation
+
+
+def __str__(self):
+    return f"Department abbrev: {self.departmentAbbreviation} number: {self.courseNumber} name: {self.name} units: {self.units}"
+
+
+"""Add the two instance methods to the class, regardless of whether we introspect or not."""
+setattr(Course, 'set_department', set_department)
+setattr(Course, '__str__', __str__)
