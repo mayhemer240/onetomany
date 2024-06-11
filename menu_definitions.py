@@ -1,3 +1,11 @@
+'''
+Malcolm Roddy
+
+Modified menu to include further options for
+adding, deleting, and listing sections. debug_select, introspection
+remains the same from sample code
+'''
+
 from Menu import Menu
 from Option import Option
 from constants import *
@@ -12,17 +20,22 @@ variables are constructed.  To be honest, I'm not sure whether these are global
 variables or not in Python.
 """
 
-# The main options for operating on Departments and Courses.
+# The main options for operating on Departments, Courses, Sections
 menu_main = Menu('main', 'Please select one of the following options:', [
     Option("Add department", "add_department(sess)"),
     Option("Add course", "add_course(sess)"),
+    Option("Add section", "add_section(sess)"),
     Option("Delete department", "delete_department(sess)"),
     Option("Delete course", "delete_course(sess)"),
+    Option("Delete section", "delete_section"),
     Option("List all departments", "list_departments(sess)"),
     Option("List all courses", "list_courses(sess)"),
+    Option("List all sections", "list_sections"),
     Option("List department courses", "list_department_courses(sess)"),
+    Option("List course sections", "list_course_sections"),
     Option("Move course to new department", "move_course_to_new_department(sess)"),
     Option("Commit", "sess.commit()"),
+    Option("Break out into shell", "IPython.embed()"),
     Option("Exit", "pass")
 ])
 
